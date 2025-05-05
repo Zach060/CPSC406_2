@@ -521,9 +521,9 @@ Question posted on Discord:
 
   This week’s material deepened both our theoretical understanding and practical skills around the core equivalence relationship between finite automata and regular expressions.  We began by rigorously defining when two states of a DFA are \'equivalent\'—that is, when no input string can distinguish between them in acceptance behavior.  Implementing the table-filling (or distinguishability) algorithm, we systematically marked all pairs of states that differ on some string and identified the remaining unmarked pairs as equivalence classes.  This process guarantees that merging those classes yields the unique minimal DFA for any regular language.  We applied it to an eight-state example, collapsing it to five states, and observed a nine-state automaton that was already minimal.  
 
-Next, we explored the reverse direction via state elimination: converting a DFA back into an explicit regular expression.  By introducing variables $R^k_{i,j}$ to denote all paths from state $i$ to $j$ that avoid intermediate states numbered higher than $k$, we derived a sequence of increasingly expressive regex fragments.  Eliminating states one by one, we produced compact expressions that exactly capture the DFA’s language: one requiring at least two zeros at the end, and another characterizing words with an odd number of ones.  
+    Next, we explored the reverse direction via state elimination: converting a DFA back into an explicit regular expression.  By introducing variables $R^k_{i,j}$ to denote all paths from state $i$ to $j$ that avoid intermediate states numbered higher than $k$, we derived a sequence of increasingly expressive regex fragments.  Eliminating states one by one, we produced compact expressions that exactly capture the DFA’s language: one requiring at least two zeros at the end, and another characterizing words with an odd number of ones.  
 
-Underlying both techniques is structural induction on string length and the closure properties of regular languages, which ensure that these manipulations preserve language equivalence.  We also discussed complexity considerations: minimization runs in polynomial time, but state elimination can yield exponentially large expressions if not carefully ordered.  Finally, we considered practical applications—from optimizing hardware state machines and compiler lexers to reverse-engineering protocols and validating regex engines—highlighting how these foundational algorithms underpin many tools in software engineering and formal verification.
+    Underlying both techniques is structural induction on string length and the closure properties of regular languages, which ensure that these manipulations preserve language equivalence.  We also discussed complexity considerations: minimization runs in polynomial time, but state elimination can yield exponentially large expressions if not carefully ordered.  Finally, we considered practical applications—from optimizing hardware state machines and compiler lexers to reverse-engineering protocols and validating regex engines—highlighting how these foundational algorithms underpin many tools in software engineering and formal verification.
 
 
 
@@ -537,4 +537,151 @@ Underlying both techniques is structural induction on string length and the clos
   \item How do the properties of equivalent-state merging inform optimizations in
         hardware finite-state machines (e.g., in FPGA design)?  
 \end{enumerate}
+
+\section{Week 6&7}
+\subsection{Summary}
+Turing machines (TMs) form the foundation of modern computation theory. They extend deterministic finite automata (DFAs) by incorporating features like an infinite tape, the ability to read and write, and movement in both directions. While DFAs are limited to recognizing regular languages, TMs are powerful enough to perform arithmetic and recognize more complex, non-regular languages.
+
+A DFA can be simulated by a TM by treating it as a read-only device that scans input from left to right and halts at the end. However, the DFA cannot store unbounded information or perform arithmetic operations. This is why languages like 
+\[
+L = \{10^n10^m10^{m+n} : n, m \in \mathbb{N}\}
+\]
+are not regular—DFAs lack the memory needed to compare arbitrary counts.
+
+Alan Turing introduced the TM model to formalize computation. He defined a TM as a 7-tuple containing a set of states, input symbols, tape symbols, a transition function, start and accept states, and a blank symbol. The TM reads one symbol, writes another, moves the head, and changes state based on the transition function.
+
+Turing machines can accept inputs by entering an accepting state. The sequence of configurations the machine goes through is captured in its \textit{Instantaneous Descriptions} (IDs), which show the tape contents and current state. Transition diagrams visually represent TM behavior and help in designing machines.
+
+Advanced exercises involve constructing TMs to recognize non-regular languages (like \( \{0^n1^n\} \)), perform arithmetic (unary addition, string doubling), and manipulate strings (swapping characters or reversing input). Multitape TMs extend the model by using multiple tapes for efficiency, though they are computationally equivalent to single-tape TMs.
+
+Languages are classified based on how TMs process them. A language is \textbf{recursively enumerable (RE)} if there exists a TM that accepts it, possibly without halting for non-members. A language is \textbf{recursive} (or \textbf{decidable}) if a TM always halts and correctly accepts or rejects any input.
+
+Some problems, such as the halting problem (whether a TM halts on a given input), are undecidable—there is no TM that can solve them for all inputs. This gives rise to distinctions among decidable, RE, and co-RE (complement of RE) languages. For instance:
+\begin{itemize}
+    \item \( L_1 = \{M \mid M \text{ halts on itself} \} \) is neither decidable nor RE.
+    \item \( L_2 = \{(M, w) \mid M \text{ halts on } w\} \) is RE but not decidable.
+    \item \( L_3 = \{(M, w, k) \mid M \text{ halts on } w \text{ in at most } k \text{ steps} \} \) is decidable.
+\end{itemize}
+
+Finally, \textit{Turing completeness} is the property of a system that can simulate any TM. Questions about the limits of computation—such as whether all RE languages are recursive—drive the study of computation theory.
+
+\subsection{Homework}
+\subsection*{1. TM for \( L = \{10^n : n \in \mathbb{N} \} \), return \(10^{n+1}\)}
+This Turing machine moves to the end of the 0s, adds another 0, and halts.
+
+\begin{verbatim}
+State  | 1       | 0       | B
+-------------------------------
+q0     | q1,1,R  |         | 
+q1     |         | q1,0,R  | q2,0,L
+q2     |         |         | q3,1,L
+q3     |         | q3,0,L  | q4,1,R
+q4     |         | q4,0,R  | HALT
+\end{verbatim}
+
+\textbf{Example:} Input: 1000 $\Rightarrow$ Output: 10000
+
+\subsection*{2. TM for \( L = \{10^n\} \), return 1}
+This machine replaces all symbols and writes a single 1.
+
+\begin{verbatim}
+State  | 1       | 0       | B
+-------------------------------
+q0     | q1,X,R  | q0,X,R  | q2,1,R
+q1     |         |         | HALT
+\end{verbatim}
+
+\subsection*{3. TM that swaps 0s and 1s in any binary string}
+
+\begin{verbatim}
+State  | 0       | 1       | B
+-------------------------------
+q0     | q0,1,R  | q0,0,R  | HALT
+\end{verbatim}
+
+\section*{Exercise 1: Decide whether the languages are decidable, r.e., or co-r.e.}
+
+\begin{enumerate}
+    \item \( L_1 = \{M \mid M \text{ halts on itself} \} \): \textbf{Not decidable}, \textbf{not r.e.}
+    \item \( L_2 = \{(M, w) \mid M \text{ halts on } w \} \): \textbf{r.e.}, \textbf{not decidable}
+    \item \( L_3 = \{(M, w, k) \mid M \text{ halts on } w \text{ in at most } k \text{ steps} \} \): \textbf{Decidable}
+\end{enumerate}
+
+\section*{Exercise 2: Determine the truth of each statement}
+
+\begin{enumerate}
+    \item \textbf{True}: The union of two decidable languages is decidable.
+    \item \textbf{True}: Decidable languages are closed under complement.
+    \item \textbf{True}: Decidable languages are closed under Kleene star.
+    \item \textbf{True}: r.e. languages are closed under union.
+    \item \textbf{False}: r.e. languages are not closed under complement.
+    \item \textbf{True}: r.e. languages are closed under Kleene star.
+\end{enumerate}
+
+\subsection{Questions}
+Question 1:How does the concept of Turing completeness help us understand the limits of what can be computed by programming languages, and how does it relate to the halting problem?
+Question 2:Why can’t deterministic finite automata (DFAs) recognize languages like L = \{0n1n : n \in \mathbb{N}\}, and how do Turing machines overcome this limitation to perform arithmetic or simulate memory?
+\section{Week 8/9}
+\subsection{Summary}
+
+
+Big O notation, also known as Landau notation, is a mathematical tool used to describe the upper bound of a function’s growth rate. While its technical definition involves bounding a function f(n) by another function g(n) up to a constant factor beyond some threshold N, its true power lies in its metaphorical use in computer science—representing performance, scalability, and complexity.
+
+The notes begin by framing Big O as more than just a formal definition; it is a metaphor essential for understanding the efficiency of algorithms and the feasibility of solving problems with limited resources. A warmup exercise helps build intuition by comparing the growth rates of common mathematical functions, such as logarithmic, polynomial, exponential, and factorial.
+
+From there, the formal definition is introduced: f(n) \in \mathcal{O}(g(n)) means that for large enough n, f(n) \leq M \cdot g(n). The properties of Big O, such as closure under addition, scaling by constants, and asymptotic comparison, form a toolkit for analyzing algorithmic behavior.
+
+Using these properties, we can compare algorithms by their runtime complexity. Exercises demonstrate how sorting algorithms like bubble sort, merge sort, and quicksort differ significantly in Big O terms. These comparisons are vital for selecting efficient solutions in practice.
+
+Ultimately, Big O allows software engineers to classify problems and algorithms by resource usage, especially time and space, making it a cornerstone of algorithm analysis and design.
+\subsection{Homework}
+\section*{Exercise 1: Order of Growth (Slow to Fast)}
+Order the functions by their asymptotic growth:
+\[
+\log(\log n) < \log n < e^{\log n} (= n) < e^{2\log n} (= n^2) < 2^n < e^n < n!
+\]
+
+\section*{Exercise 2: Basic Big O Properties}
+Let \( f, g, h : \mathbb{N} \to \mathbb{R}_{\ge 0} \).
+\begin{enumerate}
+    \item \( f \in \mathcal{O}(f) \)
+    \item If \( c > 0 \), then \( \mathcal{O}(c \cdot f) = \mathcal{O}(f) \)
+    \item If \( f \le g \) for large inputs, then \( \mathcal{O}(f) \subseteq \mathcal{O}(g) \)
+    \item If \( \mathcal{O}(f) \subseteq \mathcal{O}(g) \), then \( \mathcal{O}(f + h) \subseteq \mathcal{O}(g + h) \)
+    \item If \( h(n) > 0 \) and \( \mathcal{O}(f) \subseteq \mathcal{O}(g) \), then \( \mathcal{O}(f \cdot h) \subseteq \mathcal{O}(g \cdot h) \)
+\end{enumerate}
+
+\section*{Exercise 3: Useful Asymptotic Bounds}
+Let \( i, j, k, n \in \mathbb{N} \). Then:
+\begin{enumerate}
+    \item If \( j \le k \), then \( \mathcal{O}(n^j) \subseteq \mathcal{O}(n^k) \)
+    \item \( \mathcal{O}(n^j + n^k) \subseteq \mathcal{O}(n^k) \)
+    \item \( \mathcal{O}\left(\sum_{i=0}^{k} a_i n^i\right) = \mathcal{O}(n^k) \)
+    \item \( \mathcal{O}(\log n) \subseteq \mathcal{O}(n) \)
+    \item \( \mathcal{O}(n \log n) \subseteq \mathcal{O}(n^2) \)
+\end{enumerate}
+
+\section*{Exercise 4: Growth Function Comparisons}
+\begin{enumerate}
+    \item \( \mathcal{O}(n) \supseteq \mathcal{O}(\sqrt{n}) \)
+    \item \( \mathcal{O}(n^2) \subset \mathcal{O}(2^n) \)
+    \item \( \mathcal{O}(\log n) \subseteq \mathcal{O}(\log n \cdot \log n) \)
+    \item \( \mathcal{O}(2^n) \subset \mathcal{O}(3^n) \)
+    \item \( \mathcal{O}(\log_2 n) = \mathcal{O}(\log_3 n) \)
+\end{enumerate}
+
+\section*{Exercise 5: Sorting Algorithm Comparisons}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Algorithm A} & \textbf{Algorithm B} & \textbf{Comparison} \\
+\hline
+Bubble Sort & Insertion Sort & Both \(O(n^2)\); insertion better on nearly sorted input \\
+Insertion Sort & Merge Sort & \(O(n^2)\) vs \(O(n \log n)\); merge sort better \\
+Merge Sort & Quick Sort & Both average-case \(O(n \log n)\), worst-case quick sort is \(O(n^2)\) \\
+\hline
+\end{tabular}
+\subsection{Questions}
+1.	How does Big O analysis influence the choice of algorithms in real-world software systems, especially when working with large datasets or high-performance requirements?
+2.	In what ways can misconceptions about Big O (e.g., ignoring constant factors or worst-case focus) lead to inefficient or inappropriate engineering decisions?
+
 \end{document}
