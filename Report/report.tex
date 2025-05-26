@@ -1,97 +1,151 @@
 \documentclass{article}
 \usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{enumerate}
+\usepackage{tikz}
+\usetikzlibrary{automata,positioning,arrows}
+\usepackage{geometry}
+\geometry{margin=1in}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{hyperref}
 
-\title
-\author{}
-\date{}
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{Automata Theory Report}
+\lhead{Weeks 1-5}
+\cfoot{\thepage}
+
+\title{Automata Theory and Formal Languages\\
+\Large Course Report: Weeks 1-5}
+\author{Student Name}
+\date{\today}
 
 \begin{document}
 
 \maketitle
-\section{Week1}
+
+\begin{abstract}
+This report presents a comprehensive overview of the first five weeks of study in automata theory and formal languages. The material covers fundamental concepts including finite automata, deterministic and non-deterministic finite automata (DFA/NFA), regular languages, and state minimization techniques. Each week builds upon previous concepts, progressing from basic automaton design through advanced topics like the powerset construction and DFA minimization. The report includes detailed solutions to homework problems, practical applications, and theoretical discussions that demonstrate the relevance of automata theory to computer science and software engineering.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+\section{Week 1: Introduction to Finite Automata}
+
 \subsection{Summary}
-This chapter dives into finite automata, a key concept in understanding regular languages. At their core, finite automata are simple machines that process inputs and move between a set number of states based on defined rules. There are two main types: deterministic finite automata (DFA), which have a single, predictable transition for each state and input, and non-deterministic finite automata (NFA), which can move to multiple states at once for the same input. 
+This introductory chapter explores finite automata as fundamental computational models for processing regular languages. Finite automata are simple yet powerful machines that transition between a finite set of states based on input symbols, following predetermined rules. The chapter distinguishes between deterministic finite automata (DFA), which have exactly one transition for each state-input pair, and non-deterministic finite automata (NFA), which may have multiple possible transitions.
 
-A real-world example explored in this chapter is an electronic money system, where automata help model transactions between a customer, store, and bank. The system ensures valid transactions and prevents fraud—such as reusing the same digital money file multiple times. The automaton governs five key events: paying, canceling, shipping, redeeming, and transferring money, with each entity following strict rules to ensure everything runs smoothly.
+A practical example demonstrates an electronic money system where automata model transactions between customers, stores, and banks. The system governs five critical operations: paying, canceling, shipping, redeeming, and transferring money. Each entity follows strict transition rules to ensure transaction validity and prevent fraud, such as preventing reuse of digital money files.
 
-Another important concept covered is how automata handle errors and ignore irrelevant actions. By allowing self-loops for unimportant inputs, an automaton can avoid breaking when faced with unexpected behavior. The chapter also examines potential pitfalls, such as cases where a store ships goods before confirming payment, leading to irreversible mistakes. 
+The chapter also introduces error handling through self-loops for irrelevant inputs, allowing automata to remain functional when encountering unexpected behavior. Product automata are presented as a technique for combining multiple automata into larger systems, enabling comprehensive error-checking across multiple interacting components.
 
-To better understand interactions between different automata, the product automaton is introduced. This technique combines the states of two automata—representing the store and bank—into a larger system with 28 states. This allows for systematic error-checking, such as confirming whether goods can be shipped without actual payment.
+The analysis extends to identifying reachable states and failure points, such as attempting to cancel already-processed payments, highlighting the importance of careful automaton design in real-world applications.
 
-The chapter wraps up by analyzing which states are reachable and identifying failure points, like trying to cancel a payment that has already been processed. Ultimately, it highlights the importance of carefully structuring automata to avoid logical flaws in real-world applications.
+\subsection{Homework Solutions}
 
-\subsection{Homework}
+\subsubsection{Problem 1: Parking/Vending Machine}
 
-\subsection{Accepted Words for Vending Machine Automaton}
-The vending machine automaton accepts words that sum up to 25 cents, using symbols \{5, 10\}. The set of accepted words consists of:
+\textbf{Problem:} Characterize all accepted words for the parking/vending machine automaton.
 
+\textbf{Solution:}
+
+The automaton has:
 \begin{itemize}
-    \item \textbf{(5,5,5,5,5)}
-    \item \textbf{(5,5,5,10)}
-    \item \textbf{(5,5,10,5)}
-    \item \textbf{(5,10,5,5)}
-    \item \textbf{(10,5,5,5)}
-    \item \textbf{(5,10,10)}
-    \item \textbf{(10,5,10)}
-    \item \textbf{(10,10,5)}
+    \item States: $\{0, 5, 10, 15, 20, 25\}$ representing accumulated payment
+    \item Alphabet: $\{5, 10\}$ representing coin denominations
+    \item Initial state: 0
+    \item Final state: 25
 \end{itemize}
 
-\subsection{Regular Expression for Variable Names}
-The accepted words for variable names must start with a letter (\texttt{l}), followed by any combination of letters (\texttt{l}) and digits (\texttt{d}), and must end with a terminal symbol (\texttt{t}).
+Transitions follow: From state $s$, on input $c$: go to state $\min(s+c, 25)$
 
-The corresponding regular expression is:
+\textbf{Characterization:} A word is accepted if and only if the sum of all coins equals at least 25 cents.
 
-\begin{equation}
-    l (l + d)^* t
-\end{equation}
+Formally: $L = \{w \in \{5,10\}^* \mid \sum_{c \in w} c \geq 25\}$
 
-where:
+\subsubsection{Problem 2: Turnstile Automaton}
+
+\textbf{Problem:} Characterize all accepted words for the turnstile automaton.
+
+\textbf{Solution:}
+
+The turnstile has states $\{\text{locked}, \text{unlocked}\}$ with transitions:
 \begin{itemize}
-    \item \texttt{l} represents letters (\{a, b, c, ..., z\})
-    \item \texttt{d} represents digits (\{0, 1, 2, ..., 9\})
-    \item \texttt{t} is a terminal symbol (such as ;)
+    \item locked $\xrightarrow{\text{pay}}$ unlocked
+    \item locked $\xrightarrow{\text{push}}$ locked
+    \item unlocked $\xrightarrow{\text{pay}}$ unlocked
+    \item unlocked $\xrightarrow{\text{push}}$ locked
 \end{itemize}
 
-\subsection{Regular Expression for Turnstile Automaton}
-The turnstile automaton has two states: \texttt{locked} and \texttt{unlocked}. The transitions occur as follows:
+\textbf{Characterization:} A word is accepted if it ends in the unlocked state, which occurs when the number of "pay" actions exceeds the number of "push" actions by an odd amount.
 
+\textbf{Regular Expression:} $(\text{push}^* \cdot \text{pay} \cdot (\text{pay}^2 + \text{push}^2)^*)$
+
+\subsubsection{Problem 3: DFA Word Analysis}
+
+\textbf{Problem:} Determine which words $w_1 = 0010$, $w_2 = 1101$, $w_3 = 1100$ end in the accepting state.
+
+\textbf{Solution:}
+
+Tracing through the given DFA:
+
+For $w_1 = 0010$: $q_0 \xrightarrow{0} q_2 \xrightarrow{0} q_2 \xrightarrow{1} q_1 \xrightarrow{0} q_1$ ✓
+
+For $w_2 = 1101$: $q_0 \xrightarrow{1} q_0 \xrightarrow{1} q_0 \xrightarrow{0} q_2 \xrightarrow{1} q_1$ ✓
+
+For $w_3 = 1100$: $q_0 \xrightarrow{1} q_0 \xrightarrow{1} q_0 \xrightarrow{0} q_2 \xrightarrow{0} q_2$ ✗
+
+Words $w_1$ and $w_2$ are accepted; $w_3$ is rejected.
+
+\subsubsection{Problem 4: Language Membership}
+
+\textbf{Problem:} Determine membership in languages:
 \begin{itemize}
-    \item \texttt{pay} moves from \texttt{locked} to \texttt{unlocked}.
-    \item \texttt{push} moves from \texttt{unlocked} to \texttt{locked}.
-    \item Multiple \texttt{pay} actions while unlocked keep it open.
+    \item $L_1 := \{x01y \mid x, y \in \Sigma^*\}$ (contains substring "01")
+    \item $L_2 := \{w \mid |w| = 2^n \text{ for some } n \in \mathbb{N}\}$ (length is power of 2)
+    \item $L_3 := \{w \mid |w|_0 = |w|_1\}$ (equal numbers of 0s and 1s)
 \end{itemize}
 
-The regular expression describing the accepted words is:
+\textbf{Solution:}
 
-\begin{equation}
-    (pay (pay)*)? push
-\end{equation}
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+\hline
+Word & $L_1$ & $L_2$ & $L_3$ \\
+\hline
+$w_1 = 10011$ & ✓ & ✗ & ✗ \\
+$w_2 = 100$ & ✗ & ✗ & ✗ \\
+$w_3 = 10100100$ & ✓ & ✓ & ✗ \\
+$w_4 = 1010011100$ & ✓ & ✗ & ✓ \\
+$w_5 = 11110000$ & ✗ & ✓ & ✓ \\
+\hline
+\end{tabular}
+\end{center}
 
-\subsection{DFA Homework Solutions}
-Given the DFA defined by the following:
-\begin{itemize}
-    \item \( Q = \{ q_0, q_1, q_2 \} \)
-    \item \( \Sigma = \{0,1\} \)
-    \item Transition function:
-    \begin{align*}
-        \delta(q_0,0) &= q_2, \quad \delta(q_0,1) = q_0 \\
-        \delta(q_2,0) &= q_2, \quad \delta(q_2,1) = q_0 \\
-        \delta(q_1,0) &= q_0, \quad \delta(q_1,1) = q_1
-    \end{align*}
-    \item Initial state: \( q_0 \)
-    \item Accepting state: \( F = \{ q_1 \} \)
-\end{itemize}
+\subsection{Questions for Further Study}
+\begin{enumerate}
+    \item How can automata theory be applied to model and verify communication protocols in distributed systems, and what are the limitations of finite-state models in representing complex network behaviors?
+    
+    \item In what ways do the principles of automaton design influence the architecture of lexical analyzers in modern compilers, and how does state minimization impact parsing performance?
+\end{enumerate}
 
-\subsection{Discussion Question}
-\textbf{What are the practical and theoretical limits of automata complexity? At what point does an automaton become too complex to be useful?}
+\section{Week 2: DFA Operations and Constructions}
 
+\subsection{Summary}
+Week 2 focuses on fundamental operations with deterministic finite automata and their implementation. The material covers DFA simulation through the run method, language characterization, and Boolean operations on regular languages including complement and intersection.
 
+Key topics include implementing DFA execution algorithms, designing automata for specific language patterns, and understanding closure properties of regular languages. The complement construction demonstrates that regular languages are closed under complementation by simply inverting the set of final states. The intersection construction uses the Cartesian product of state sets to create automata that accept words belonging to both input languages.
 
+The practical component involves Python implementation of DFA operations, bridging theoretical concepts with software engineering practices. This reinforces understanding of transition functions, error handling, and algorithmic efficiency in automaton simulation.
 
+\subsection{Exercise Solutions}
 
-\section{Week2}
-\section*{Exercise 1 (Word processing with DFAs)}
-\subsection*{1.1 Acceptance Table}
+\subsubsection{Exercise 1: Word Processing with DFAs}
+
+\textbf{1.1 Acceptance Table:}
 \begin{center}
 \begin{tabular}{c|cc}
 $w$ & accepted by $A_1$? & accepted by $A_2$? \\
@@ -107,438 +161,216 @@ $bbb$ & F & F \\
 \end{tabular}
 \end{center}
 
-\subsection*{1.2 Languages}
+\textbf{1.2 Languages:}
 \begin{align*}
-L(A_1) &= \{\,w\in\{a,b\}^*: w \text{ starts with }a\text{ and ends in }b\} = a\{a,b\}^*b,\\
-L(A_2) &= \{\,w\in\{a,b\}^*: w \text{ ends in }aa\} = \{a,b\}^*aa.
+L(A_1) &= \{w\in\{a,b\}^* : w \text{ starts with } a \text{ and ends with } b\} \\
+L(A_2) &= \{w\in\{a,b\}^* : w \text{ ends with } aa\}
 \end{align*}
 
-\section*{Exercise 2 (Implementing DFA runs)}
-In \texttt{dfa.py}, implement the \texttt{run} method as follows:
+\subsubsection{Exercise 4: Complement Automaton}
+
+For DFA $A=(Q,\Sigma,\delta,q_0,F)$, the complement automaton is:
+$$A' = (Q,\Sigma,\delta,q_0,Q\setminus F)$$
+
+\textbf{Python Implementation:}
 \begin{verbatim}
-class DFA:
-    def __init__(self, Q, Sigma, delta, q0, F):
-        self.Q = Q
-        self.Sigma = Sigma
-        self.delta = delta
-        self.q0 = q0
-        self.F = F
-
-    def run(self, w):
-        curr = self.q0
-        for sym in w:
-            if sym not in self.Sigma:
-                raise ValueError(f"Symbol {sym!r} not in alphabet Σ")
-            key = (curr, sym)
-            if key in self.delta:
-                curr = self.delta[key]
-            elif curr in self.delta and sym in self.delta[curr]:
-                curr = self.delta[curr][sym]
-            else:
-                return False
-        return curr in self.F
-\end{verbatim}
-
-\section*{Exercise 3 (Designing DFAs)}
-For each language over $\{a,b\}$, we give a 5-tuple definition and a schematic.
-\begin{enumerate}[a)]
-  \item Words ending in ``\texttt{ab}''.\\
-    $Q=\{q_0,q_1,q_2\},\,\Sigma=\{a,b\},\,q_0,\,F=\{q_2\}$.\\
-    Transitions: $\delta(q_0,a)=q_1$, $\delta(q_0,b)=q_0$;
-    $\delta(q_1,a)=q_1$, $\delta(q_1,b)=q_2$;
-    $\delta(q_2,a)=q_1$, $\delta(q_2,b)=q_0$.
-  \item Words containing ``\texttt{aba}'' as a substring.\\
-    $Q=\{p_0,p_1,p_2,p_3\},\,q_0=p_0,\,F=\{p_3\}$.\\
-    Progress states track prefix matches of "aba"; on match move to $p_3$ and stay.
-  \item Words with odd number of $a$'s and odd number of $b$'s.\\
-    $Q=\{(e,e),(e,o),(o,e),(o,o)\}$, start $(e,e)$, final $(o,o)$.
-  \item Words with even number of $a$'s and odd number of $b$'s.\\
-    Same $Q$, start $(e,e)$, final $(e,o)$.
-  \item Words in which any three consecutive characters contain at least one $a$.\\
-    $Q=\{r_0,r_1,r_2,r_3\}$, where $r_k$ means last $k$ symbols were $b$;
-    start $r_0$, sink $r_3$, finals $\{r_0,r_1,r_2\}$.
-  \item Words containing ``\texttt{bbb}'' as a substring.\\
-    Same $Q$, with final $r_3$ instead.
-\end{enumerate}
-
-\section*{Exercise 4 (Complement Automaton)}
-Given $A=(Q,\Sigma,\delta,q_0,F)$, its complement $A_0$ is
-\[A_0 = (Q,\Sigma,\delta,q_0,\,Q\setminus F).\]
-In \texttt{dfa.py}:
-\begin{verbatim}
-def refuse(self, A: DFA) -> DFA:
+def complement(self):
     return DFA(
-        Q=A.Q, Sigma=A.Sigma,
-        delta=A.delta, q0=A.q0,
-        F=set(A.Q) - set(A.F)
+        Q=self.Q, 
+        Sigma=self.Sigma,
+        delta=self.delta, 
+        q0=self.q0,
+        F=set(self.Q) - set(self.F)
     )
 \end{verbatim}
 
-\section*{Exercise 5 (Intersection Automaton)}
-Given $A$ and $B$, the intersection $C$ has:
-\[Q_C=Q_A\times Q_B,\;q_{0,C}=(q_{0,A},q_{0,B}),\;F_C=F_A\times F_B,\]
-\[\delta_C((p,q),a)=(\delta_A(p,a),\delta_B(q,a)).\]
+\subsubsection{Exercise 5: Intersection Automaton}
 
-\section*{Exercise 2.2.4 (ITALC)}
-\begin{enumerate}[a)]
-  \item Ends in ``00'': states $s_0,s_1,s_2$, $F=\{s_2\}$.
-  \item Has three consecutive 0’s: states $t_0,t_1,t_2,t_3$, $F=\{t_3\}$.
-  \item Has substring "011": states $u_0,u_1,u_2,u_3$, $F=\{u_3\}$.
+For DFAs $A$ and $B$, the intersection automaton $C$ has:
+\begin{align*}
+Q_C &= Q_A \times Q_B \\
+q_{0,C} &= (q_{0,A}, q_{0,B}) \\
+F_C &= F_A \times F_B \\
+\delta_C((p,q),a) &= (\delta_A(p,a), \delta_B(q,a))
+\end{align*}
+
+\subsection{Questions for Further Study}
+\begin{enumerate}
+    \item How do the closure properties of regular languages under Boolean operations enable the construction of complex pattern-matching systems in text processing applications?
+    
+    \item What are the computational complexity implications of DFA intersection and union operations in the context of model checking and formal verification systems?
 \end{enumerate}
 
-\section*{Summary}
-This week reinforced core concepts in automata theory and their practical relevance in computer science:
+\section{Week 3: Extended Transitions and Product Automata}
+
+\subsection{Summary}
+Week 3 deepens understanding of automata theory through extended transition functions and product constructions. The extended transition function $\hat{\delta}$ formalizes multi-step transitions from states through entire strings, providing the mathematical foundation for automaton acceptance.
+
+Product automata construction enables combining multiple automata to model complex systems with multiple constraints. The intersection construction creates automata accepting languages that satisfy all component specifications simultaneously, while union construction accepts languages satisfying any component specification.
+
+Structural induction on string length emerges as a fundamental proof technique, demonstrated through formal verification of transition properties. This mathematical rigor underpins correctness arguments in compiler design and system verification.
+
+\subsection{Homework Solutions}
+
+\subsubsection{Homework 1: Extended Transition Function}
+
+\textbf{Problem 1:} $L(\mathcal{A}^{(2)})$ accepts words of odd length where every odd-positioned letter is 'a':
+$$L(\mathcal{A}^{(2)}) = \{w \in \{a,b\}^* : |w| \equiv 1 \pmod{2}, w_{2i+1} = a\}$$
+
+\textbf{Problem 2:} Computing extended transitions:
+
+For $\hat{\delta}^{(1)}(1, abaa)$:
+\begin{align*}
+\hat{\delta}^{(1)}(1, \varepsilon) &= 1 \\
+\hat{\delta}^{(1)}(1, a) &= 2 \\
+\hat{\delta}^{(1)}(1, ab) &= 3 \\
+\hat{\delta}^{(1)}(1, aba) &= 2 \\
+\hat{\delta}^{(1)}(1, abaa) &= 2
+\end{align*}
+
+\subsubsection{Homework 2: Product Automaton}
+
+The intersection automaton has:
+\begin{align*}
+Q &= Q_1 \times Q_2 \\
+q_0 &= (q_0^{(1)}, q_0^{(2)}) \\
+F &= F^{(1)} \times F^{(2)} \\
+\delta((p,q), a) &= (\delta^{(1)}(p,a), \delta^{(2)}(q,a))
+\end{align*}
+
+\textbf{Proof:} A word $w$ is accepted iff its run ends in $(p,q) \in F^{(1)} \times F^{(2)}$, which occurs exactly when $w$ is accepted by both component automata.
+
+\subsection{Induction Proof Example}
+
+\textbf{Exercise 2.2.7:} For state $q$ with $\delta(q,a) = q$ for all $a \in \Sigma$, prove $\hat{\delta}(q,w) = q$ for all $w \in \Sigma^*$.
+
+\textbf{Proof by induction on $|w|$:}
+
+\textbf{Base case:} $|w| = 0$, so $w = \varepsilon$. By definition, $\hat{\delta}(q,\varepsilon) = q$.
+
+\textbf{Inductive step:} Assume the claim holds for all words of length $n$. For $|w| = n+1$, write $w = xa$ where $|x| = n$ and $a \in \Sigma$:
+$$\hat{\delta}(q,xa) = \delta(\hat{\delta}(q,x), a) = \delta(q,a) = q$$
+
+The second equality uses the inductive hypothesis, and the third uses the loop property.
+
+\subsection{Questions for Further Study}
+\begin{enumerate}
+    \item How does the concept of extended transition functions generalize to pushdown automata and Turing machines, and what additional mathematical structures are required?
+    
+    \item In what ways can product automaton constructions be optimized to avoid state explosion in practical model checking applications?
+\end{enumerate}
+
+\section{Week 4: Nondeterministic Finite Automata}
+
+\subsection{Summary}
+Week 4 introduces nondeterministic finite automata (NFAs) and establishes their equivalence with DFAs through the powerset construction. NFAs allow multiple transitions from a single state on the same input symbol, enabling more natural modeling of certain computational processes.
+
+The key insight is that despite their apparent additional power, NFAs recognize exactly the same class of languages as DFAs—the regular languages. The powerset construction provides an algorithmic transformation from any NFA to an equivalent DFA, though potentially with exponential state growth.
+
+This equivalence has profound implications for language theory and practical applications, as it allows leveraging the conceptual simplicity of NFAs for design while maintaining the algorithmic predictability of DFAs for implementation.
+
+\subsection{Homework Solutions}
+
+\subsubsection{Homework 1: Viewing DFA as NFA}
+
+Any DFA $A = (Q, \Sigma, \delta, q_0, F)$ can be viewed as an NFA by redefining the transition function:
+$$\delta_N(q,a) = \{\delta(q,a)\}$$
+
+This creates singleton sets for each transition, maintaining deterministic behavior while conforming to NFA notation. Clearly $L(A) = L(A')$ since no additional nondeterminism is introduced.
+
+\subsubsection{Homework 2: Powerset Construction}
+
+For NFA $N = (Q, \Sigma, \delta_N, q_0, F)$, the equivalent DFA is $D = (Q_D, \Sigma, \delta_D, \{q_0\}, F_D)$ where:
+
 \begin{itemize}
-  \item \textbf{Finite-State Modeling}: We deepened our understanding of DFAs as abstract machines that precisely capture patterns in strings through state transitions, laying the groundwork for modeling sequential logic and protocol behaviors.
-  \item \textbf{Regular Languages and Closure}: By designing DFAs for endings, substrings, parity checks, and forbidden patterns, we explored the expressive power of regular languages and saw how operations like complement and intersection enable algebraic manipulation of those languages.
-  \item \textbf{Algorithmic Construction}: Implementing simulation (\texttt{run}), complementation (\texttt{refuse}), and intersection (product construction) methods highlighted how formal definitions translate into concrete algorithms—an essential skill in compiler design and text-processing tools.
-  \item \textbf{Software Engineering Integration}: Bridging the theory with Python code reinforced good practices for representing transition functions, error handling for unexpected inputs, and writing clear, maintainable simulation routines.
+    \item $Q_D = \mathcal{P}(Q)$ (powerset of $Q$)
+    \item $\delta_D(S,a) = \bigcup_{q \in S} \delta_N(q,a)$
+    \item $F_D = \{S \subseteq Q : S \cap F \neq \emptyset\}$
 \end{itemize}
 
-\section*{Questions for Reflection}
+\textbf{Example Construction:}
+Starting from $\{q_0\}$, we systematically compute all reachable subsets and their transitions, creating a DFA that simulates all possible NFA computations simultaneously.
+
+\subsection{Questions for Further Study}
 \begin{enumerate}
-  \item How might the complement and intersection constructions for DFAs be used in software testing for validating input constraints?  
-  \item In what ways do DFA designs correspond to components in a compiler’s lexical analyzer when tokenizing source code?  
-  \item How can the principles of state minimization and transition completeness improve the efficiency of regular-expression engines in practical applications?  
-  \item Can you think of another area in computer science—such as network protocol design or digital circuit verification—where DFA constructions play a crucial role?  
-  \item How would you extend these DFA techniques to model nondeterministic or infinite-state behaviors encountered in real-world systems?  
+    \item How do modern regular expression engines balance the use of NFA and DFA representations to optimize both compile-time and runtime performance?
+    
+    \item What techniques can mitigate the exponential state explosion in powerset construction when dealing with large NFAs derived from complex regular expressions in practical applications?
 \end{enumerate}
-\section{Week3}
-\section*{Homework 1 (Extended Transition Function)}
-    \begin{enumerate}[1.]
-      \item \textbf{Describe $L(\mathcal A^{(2)})$.}\\
-        From the diagram, $\mathcal A^{(2)}$ accepts exactly those words of odd length
-        in which every letter in an odd position is \texttt{a}.  In set notation:
-        \[L(\mathcal A^{(2)})=\{\,w\in\{a,b\}^*: |w|\equiv1\pmod2,\,w_{2i+1}=a\}\,
-          = a\{a,b\}a\{a,b\}a\cdots.\]
-    
-      \item \textbf{Compute $\hat\delta^{(1)}(1,\,abaa)$ and $\hat\delta^{(2)}(1,\,abba)$.}
-        Write out every step of the extended transition function.\\
-        \textbf{(a)} For $\mathcal A^{(1)}$, we have the transitions:
-        \[1\xrightarrow{a}2,\quad2\xrightarrow{b}3,\quad3\xrightarrow{a}2,\quad2\xrightarrow{a}2.\]
-        Hence:
-        \begin{align*}
-          \hat\delta^{(1)}(1,\,\varepsilon)&=1,\\
-          \hat\delta^{(1)}(1,\,a)&=\delta^{(1)}(1,a)=2,\\
-          \hat\delta^{(1)}(1,\,ab)&=\delta^{(1)}(2,b)=3,\\
-          \hat\delta^{(1)}(1,\,aba)&=\delta^{(1)}(3,a)=2,\\
-          \hat\delta^{(1)}(1,\,abaa)&=\delta^{(1)}(2,a)=2.
-        \end{align*}
-        So $\hat\delta^{(1)}(1,abaa)=2$.\\
-        \textbf{(b)} For $\mathcal A^{(2)}$, with
-        \[1\xrightarrow{a}2,\;1\xrightarrow{b}3,\;2\xrightarrow{b}1,\;2\xrightarrow{a}1,\;3\xrightarrow{a,b}3,\]
-        we compute:
-        \begin{align*}
-          \hat\delta^{(2)}(1,\,\varepsilon)&=1,\\
-          \hat\delta^{(2)}(1,\,a)&=\delta^{(2)}(1,a)=2,\\
-          \hat\delta^{(2)}(1,\,ab)&=\delta^{(2)}(2,b)=1,\\
-          \hat\delta^{(2)}(1,\,abb)&=\delta^{(2)}(1,b)=3,\\
-          \hat\delta^{(2)}(1,\,abba)&=\delta^{(2)}(3,a)=3.
-        \end{align*}
-        Thus $\hat\delta^{(2)}(1,abba)=3$.
-    \end{enumerate}
-    
-    \section*{Homework 2 (Product Automaton)}
-    Let $\mathcal A^{(1)}=(Q_1,\Sigma,\delta^{(1)},q_0^{(1)},F^{(1)})$ and
-    $\mathcal A^{(2)}=(Q_2,\Sigma,\delta^{(2)},q_0^{(2)},F^{(2)})$ with the given diagrams.
-    
-    \begin{enumerate}[1.]
-      \item \textbf{Intersection Automaton $\mathcal A$:}
-        Define
-        \[Q=Q_1\times Q_2,\quad q_0=(q_0^{(1)},q_0^{(2)}),\quad
-          F=F^{(1)}\times F^{(2)},\]
-        and for each $(p,q)\in Q$, $a\in\Sigma$:
-        \[\delta((p,q),a)=(\delta^{(1)}(p,a),\,\delta^{(2)}(q,a)).\]
-        In TikZ, the reachable portion of the product is:
-        \begin{center}
-        \begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=2cm]
-          \node[state,initial]    (11) {$(1,1)$};
-          \node[state,accepting]  (22)[right of=11] {$(2,2)$};
-          \node[state]            (13)[below of=11] {$(1,3)$};
-          \node[state]            (23)[right of=13] {$(2,3)$};
-          \path
-            (11) edge node[above] {$a$} (22)
-            (11) edge node[left]  {$b$} (13)
-            (22) edge node[below] {$b$} (23)
-            (23) edge[loop right] node {$a,b$} (23);
-        \end{tikzpicture}
-        \end{center}
-    
-      \item \textbf{Proof of Intersection:}
-        A word $w$ is accepted by $\mathcal A$ iff its run ends in
-        $(p,q)\in F^{(1)}\times F^{(2)}$, i.e.\ $p\in F^{(1)}$ and $q\in F^{(2)}$.
-        By definition of $\delta$, this holds exactly when $w$ is accepted
-        by both $\mathcal A^{(1)}$ and $\mathcal A^{(2)}$.  Hence
-        $L(\mathcal A)=L(\mathcal A^{(1)})\cap L(\mathcal A^{(2)})$.
-    
-      \item \textbf{Union Automaton $\mathcal A'$:}
-        To get $L(\mathcal A')=L(\mathcal A^{(1)})\cup L(\mathcal A^{(2)})$,
-        keep the same product transitions but replace
-        \[F'=(F^{(1)}\times Q_2)\;\cup\;(Q_1\times F^{(2)}).\]
-        That is, accept any pair where at least one component is accepting.
-    \end{enumerate}
-    
-    \section*{Exercise 2.2.7 (Induction on $\hat\delta$)}
-    Let $\mathcal A=(Q,\Sigma,\delta,q_0,F)$ be a DFA and $q\in Q$ satisfy
-    $\delta(q,a)=q$ for all $a\in\Sigma$.  We prove by induction on $|w|$ that
-    \[\hat\delta(q,w)=q\quad\forall w\in\Sigma^*.\]
-    
-    \textbf{Base case:} $|w|=0$, so $w=\varepsilon$.  By definition,
-    $\hat\delta(q,\varepsilon)=q$.\\
-    \textbf{Inductive step:} Assume for some $n\ge0$ the claim holds for all
-    $|w|=n$.  Let $|w|=n+1$, write $w=xa$ with $|x|=n$ and $a\in\Sigma$.  Then
-    \[
-      \hat\delta(q,xa)
-      =\delta\bigl(\hat\delta(q,x),a\bigr)
-      =\delta(q,a)
-      =q
-    \]
-    where the second equality uses the IH and the third uses the loop hypothesis.
-    Thus the statement holds for all $n$.
-    
-    \section*{Reading and Discussion}
-    Read ITALC Section 2.3 on \emph{Nondeterministic Finite Automata}.  Post an
-    interesting question about NFAs on Discord and include it here:
-    
-    "\textbf{Question:} How does the subset-construction algorithm ensure that
-    an NFA’s nondeterministic branching is faithfully simulated by a DFA without
-    exponential blow-up in the recognized language?"
-    
-    \section*{Summary}
-    This week we extended our toolkit in automata theory:
-    \begin{itemize}
-      \item \textbf{Extended Transition Function:} Learned to track multi-step
-        transitions $\hat\delta(q,w)$ by induction, underpinning formal proofs.
-      \item \textbf{Product Automata:} Saw how intersection and union of regular
-        languages correspond to Cartesian-product constructions on state sets
-        and simple adjustments of final states.
-      \item \textbf{Proof Techniques:} Practiced structural induction on string
-        length, a key proof method throughout theoretical computer science.
-      \item \textbf{Nondeterminism:} Began exploring NFAs and the subset
-        construction, which bridges nondeterministic models with deterministic
-        algorithms used in lexical analysis and model checking.
-    \end{itemize}
-    
-\section*{Questions}
-Reflect on how these topics extend to broader computer-science contexts:
+
+\section{Week 5: Regular Expressions and DFA Minimization}
+
+\subsection{Summary}
+Week 5 completes the foundation of regular language theory by connecting DFAs to regular expressions and introducing state minimization techniques. The state elimination method provides a systematic algorithm for converting any DFA to an equivalent regular expression, demonstrating that every DFA-recognizable language has a finite regular expression representation.
+
+DFA minimization addresses the practical problem of reducing automaton size while preserving language recognition. The table-filling algorithm systematically identifies distinguishable state pairs, enabling construction of minimal DFAs with the fewest possible states. This optimization is crucial for memory-efficient implementations in lexical analyzers and pattern-matching systems.
+
+The relationship between regular expressions, NFAs, and DFAs forms the theoretical foundation for modern text processing tools, compiler front-ends, and formal verification systems.
+
+\subsection{Exercise Solutions}
+
+\subsubsection{Exercise 3.2.1: State Elimination Method}
+
+Given the DFA transition table, we apply the state elimination algorithm to derive regular expressions $R_{ij}^{(k)}$ representing paths from state $i$ to state $j$ using intermediate states $1, 2, \ldots, k$.
+
+\textbf{Base Case ($R_{ij}^{(0)}$):} Direct transitions without intermediate states:
+\begin{align}
+R_{11}^{(0)} &= 1, \quad R_{12}^{(0)} = 0, \quad R_{13}^{(0)} = \emptyset \\
+R_{21}^{(0)} &= 1, \quad R_{22}^{(0)} = \emptyset, \quad R_{23}^{(0)} = 0 \\
+R_{31}^{(0)} &= \emptyset, \quad R_{32}^{(0)} = 1, \quad R_{33}^{(0)} = 0
+\end{align}
+
+Using the recurrence $R_{ij}^{(k)} = R_{ij}^{(k-1)} + R_{ik}^{(k-1)}(R_{kk}^{(k-1)})^*R_{kj}^{(k-1)}$:
+
+\textbf{After eliminating state 1:}
+$R_{11}^{(1)} = 1^*$, $R_{12}^{(1)} = 1^*0$, etc.
+
+\textbf{Final regular expression:} The language accepted by the automaton is:
+$$L = R_{13}^{(3)} = 1^*0(1^*0 + 0)^*$$
+
+\subsubsection{Exercise 4.4.1: DFA Minimization}
+
+The table-filling algorithm identifies distinguishable state pairs:
+
+\textbf{Step 1:} Mark all pairs $(p,q)$ where exactly one of $p,q$ is accepting.
+
+\textbf{Step 2:} Iteratively mark pairs $(p,q)$ if there exists input $a$ such that $(\delta(p,a), \delta(q,a))$ is already marked.
+
+\textbf{Result:} After systematic analysis, states can be partitioned into equivalence classes. The minimized DFA combines equivalent states while preserving the original language.
+
+For this particular DFA, the analysis reveals that the automaton reduces to 2 states: one equivalence class containing all non-accepting states, and another containing the single accepting state $D$.
+
+\subsubsection{Exercise 4.4.2: Advanced Minimization}
+
+This exercise demonstrates a DFA that is already minimal—all 9 states are pairwise distinguishable. The systematic application of the distinguishability test confirms that no further state reduction is possible without changing the recognized language.
+
+\subsection{Questions for Further Study}
 \begin{enumerate}
-  \item How could structural induction on $\hat\delta$ be adapted to prove properties
-        of pushdown automata or Turing machines?  
-  \item In complex software systems (e.g., compilers, protocol verifiers), how might
-        intersection and union automaton constructions enforce multiple constraints
-        or specifications simultaneously?  
-  \item What are the practical trade-offs of converting an NFA to a DFA via subset
-        construction in real-world pattern-matching applications, considering
-        state-space explosion and performance?  
+    \item How does the computational complexity of DFA minimization scale with automaton size, and what approximation algorithms exist for large-scale applications where exact minimization is computationally prohibitive?
+    
+    \item In what ways do state minimization techniques for DFAs extend to other computational models like pushdown automata or finite-state transducers used in natural language processing?
 \end{enumerate}
 
-\section{Week4}
-\section*{Homework 1 (Viewing a DFA as an NFA)}
-Let $A=(Q,\Sigma,\delta,q_0,F)$ be a DFA.  We can regard $A$ as an NFA by
-allowing its transition function to return singleton sets:
-\[
-  \delta_N(q,a)=\{\delta(q,a)\},
-  \quad\text{for each }q\in Q,\;a\in\Sigma.
-\]
+\section{Conclusion}
 
-\begin{enumerate}[1.]
-  \item For the concrete DFA below, simply reinterpret each arrow $p\xrightarrow{a}r$
-        as $p\xrightarrow{a}\{r\}$ in the NFA.
-  \item In general, define $A'=(Q,\Sigma,\delta',q_0,F)$ with $\delta':Q\times\Sigma\to P(Q)$
-        by $\delta'(q,a)=\{\delta(q,a)\}$.  Clearly $L(A')=L(A)$ since the NFA has no
-        additional nondeterminism.
-  \item This construction satisfies $L(A')=L(A)$ by definition: each NFA branch
-        follows the unique DFA transition.
-\end{enumerate}
+The first five weeks of automata theory study establish a solid foundation in finite-state computation and regular languages. Beginning with basic automaton concepts and progressing through advanced topics like nondeterminism and minimization, the material demonstrates both theoretical elegance and practical relevance.
 
-\section*{Homework 2 (Power‐Set Construction)}
-Let $N=(Q,\Sigma,\delta_N,q_0,F)$ be the given NFA.  Its determinization is
-$D=(Q_D,\Sigma,\delta_D,\{q_0\},F_D)$ where:
+Key achievements include:
 \begin{itemize}
-  \item $Q_D=\mathcal P(Q)$,
-  \item $\delta_D(S,a)=\bigcup_{q\in S}\delta_N(q,a)$,
-  \item $F_D=\{S\subseteq Q\mid S\cap F\neq\emptyset\}$.
+    \item Mastery of DFA and NFA design for pattern recognition
+    \item Understanding of closure properties and Boolean operations on regular languages
+    \item Proficiency in automaton transformations (NFA to DFA conversion, minimization)
+    \item Connection between automata and regular expressions
+    \item Appreciation for applications in compiler design and text processing
 \end{itemize}
 
-\subsection*{Example Determinization}
-Starting from $\{q_0\}$, we compute reachable subsets and draw the DFA:
-\begin{center}
-\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=2cm]
-  \node[state,initial]    (0) {\{q_0\}};
-  \node[state]            (01)[right of=0] {\{q_0,q_1\}};
-  \node[state,accepting]  (1)[below of=01] {\{q_1, q_2\}};
-  \node[state]            (2)[below of=0] {\emptyset};
-  \path
-    (0)   edge node{$a$} (01)
-          edge node[left]{$b$} (0)
-    (01)  edge node{$a$} (01)
-          edge node{$b$} (1)
-    (1)   edge[loop right] node{$a,b$} ()
-    (2)   edge[loop left]  node{$a,b$} ();
-\end{tikzpicture}
-\end{center}
+These foundational concepts prepare for advanced topics in formal language theory, including context-free languages, pushdown automata, and Turing machines. The mathematical rigor developed through inductive proofs and construction algorithms provides essential skills for theoretical computer science and software verification.
 
-\section*{Reading and Discussion}
-Read ITALC Sections 3.1–3.2.2 on determinization and the power‐set automaton.
-Post an interesting question on Discord and include it here.
-
-\section*{Summary}
-This week’s lessons highlighted:
-\begin{itemize}
-  \item \textbf{Equivalence of NFAs and DFAs}: Although NFAs allow multiple
-    next states, they recognize exactly the same class of regular languages.
-  \item \textbf{Canonical DFA Representation}: Every DFA is trivially an NFA
-    by viewing transitions as singleton sets, reinforcing the shared model.
-  \item \textbf{Power‐Set Construction}: The subset algorithm systematically
-    converts any NFA into an equivalent DFA, with states representing sets
-    of NFA states and accepting those that contain an NFA final state.
-  \item \textbf{Practical Considerations}: Determinization may introduce
-    exponentially many states; in real engines, unreachable subsets are
-    omitted and trap states help manage missing transitions.
-\end{itemize}
-
-\section*{Questions}
-\begin{enumerate}
-  \item In designing a lexical analyzer for a programming language, how
-        would you apply the power‐set construction to combine multiple token
-       ‐recognition NFAs into a single efficient DFA?  
-  \item What strategies can mitigate the state‐explosion problem when
-        determinizing large NFAs derived from complex regular expressions?  
-  \item How does treating a DFA as an NFA simplify proofs of closure properties
-        of regular languages under operations like concatenation and Kleene star?  
-\end{enumerate}
-\section{Week5}
-\section*{Homework 1: Testing Equivalence and Minimization}
-\subsection*{Exercise 4.4.1 (Fig.~4.14)}
-The DFA has states $\{A,B,C,D,E,F,G,H\}$ with start $A$ and final $D$.  The transition table:
-\begin{center}\begin{tabular}{c|cc}
-       & 0 & 1 \\
-\hline
-$\to A$ & B & A \\
-$B$     & A & C \\
-$C$     & D & B \\
-$\ast D$& D & A \\
-$E$     & D & F \\
-$F$     & G & E \\
-$G$     & F & G \\
-$H$     & G & D \\
-\end{tabular}\end{center}
-
-\paragraph{Table‑filling for distinguishability.}
-Initially mark pairs where exactly one is final:
-$$\{A,B\},\{B,D\},\{C,D\},\{D,E\},\{D,F\},\{D,G\},\{D,H\},\{D,A\},\dots$$
-Iterating on transitions, the only pairs that remain unmarked (i.e.\ equivalent) are:
-$$ (A,G),\;(B,F),\;(C,E).$$
-Thus the equivalence classes are:
-$$\{A,G\},\{B,F\},\{C,E\},\{D\},\{H\}.$$ 
-
-\paragraph{Minimal DFA.}  Merging each equivalent class:
-\begin{itemize}
-  \item $X=\{A,G\}$ (start),
-  \item $Y=\{B,F\}$,
-  \item $Z=\{C,E\}$,
-  \item $W=\{D\}$ (final),
-  \item $H'=\{H\}$.
-\end{itemize}
-Transitions on $0$ and $1$:
-\begin{center}\begin{tabular}{c|cc}
-       & 0 & 1 \\
-\hline
-$\to X$ & $Y$ & $X$ \\
-$Y$     & $X$ & $Z$ \\
-$Z$     & $W$ & $Y$ \\
-$W^*$   & $W$ & $X$ \\
-$H'$    & $X$ & $W$ \\
-\end{tabular}\end{center}
-
-\subsection*{Exercise 4.4.2 (Fig.~4.15)}
-The nine-state DFA (start $A$, finals $C,I$) has no equivalent pairs under the
-table‑filling algorithm, so it is already minimal.
-
-\section*{Homework 2: Regular-Expression Derivation}
-\subsection*{Exercise 3.2.1 (First DFA)}
-States $q_1,q_2,q_3$, start $q_1$, final $q_3$; table:
-\[\begin{array}{c|cc}
-     & 0 & 1 \\
-\hline
-\to q_1 & q_2 & q_1 \\
- q_2    & q_3 & q_1 \\
-\ast q_3& q_3 & q_2
-\end{array}\]
-
-\paragraph{$R^0_{ij}$ (direct transitions):}
-\[
-R^0=\begin{pmatrix}
-1 & 0 & \emptyset\\
-1 & \emptyset & 0\\
-\emptyset & 1 & 0
-\end{pmatrix}
-\]\
-(rows $i=1,2,3$; cols $j=1,2,3$.)
-
-\paragraph{$R^1_{ij}$ (allowing paths via $q_1$):}
-\[
-R^1=\begin{pmatrix}
-1(1)^* & 0\cup1(1)^*0 & \emptyset\\
-1(1)^* & 1(1)^*0      & 0\\
-\emptyset & 1          & 0
-\end{pmatrix}
-\]
-
-\paragraph{$R^2_{ij}$ (via $q_2$):}
-Omitting intermediate algebra, one finds:
-\[
-R^2_{13} = (0\cup1(1)^*0)(1(1)^*0)^*0,
-\]
-and in particular all routes from $q_1$ to $q_3$ require two zeros with only zeros thereafter.
-
-\paragraph{Final regex:}
-Strings ending in at least two \texttt{0}'s:
-$$L= (0\cup1)^*\,00\,0^*.
-$$
-
-\subsection*{Exercise 3.2.2 (Second DFA)}
-Table:
-\[\begin{array}{c|cc}
-     & 0 & 1 \\
-\hline
-\to q_1 & q_2 & q_3 \\
- q_2    & q_1 & q_3 \\
-\ast q_3& q_3 & q_1
-\end{array}\]
-
-By repeated elimination one shows that $L$ is the set of strings with an odd
-number of \texttt{1}'s (zeros can appear arbitrarily).  A concise regex is:
-$$L = 0^*(10^*10^*)^*10^*.
-$$
-
-\section*{Reading and Discussion}
-Question posted on Discord:
-"How does minimization depth (number of table‑filling rounds) relate
- empirically to language complexity in real-world regex engines?"
-
-\section*{Summary}
-
-  This week’s material deepened both our theoretical understanding and practical skills around the core equivalence relationship between finite automata and regular expressions.  We began by rigorously defining when two states of a DFA are \'equivalent\'—that is, when no input string can distinguish between them in acceptance behavior.  Implementing the table-filling (or distinguishability) algorithm, we systematically marked all pairs of states that differ on some string and identified the remaining unmarked pairs as equivalence classes.  This process guarantees that merging those classes yields the unique minimal DFA for any regular language.  We applied it to an eight-state example, collapsing it to five states, and observed a nine-state automaton that was already minimal.  
-
-    Next, we explored the reverse direction via state elimination: converting a DFA back into an explicit regular expression.  By introducing variables $R^k_{i,j}$ to denote all paths from state $i$ to $j$ that avoid intermediate states numbered higher than $k$, we derived a sequence of increasingly expressive regex fragments.  Eliminating states one by one, we produced compact expressions that exactly capture the DFA’s language: one requiring at least two zeros at the end, and another characterizing words with an odd number of ones.  
-
-    Underlying both techniques is structural induction on string length and the closure properties of regular languages, which ensure that these manipulations preserve language equivalence.  We also discussed complexity considerations: minimization runs in polynomial time, but state elimination can yield exponentially large expressions if not carefully ordered.  Finally, we considered practical applications—from optimizing hardware state machines and compiler lexers to reverse-engineering protocols and validating regex engines—highlighting how these foundational algorithms underpin many tools in software engineering and formal verification.
+The practical implementations and real-world examples demonstrate how abstract mathematical models translate into concrete computational tools, reinforcing the relevance of theoretical computer science to software engineering practice.
 
 
+\section{Week 6 \& 7: Turing Machines and Computational Theory}
 
-
-\section*{Questions}
-\begin{enumerate}
-  \item In large-scale pattern-matching engines, how might one decide whether to
-        use a minimized DFA or a directly-eliminated-regex for efficiency?  
-  \item Can the table‑filling algorithm be parallelized to speed up minimization on
-        very large automata, and what are the trade-offs?  
-  \item How do the properties of equivalent-state merging inform optimizations in
-        hardware finite-state machines (e.g., in FPGA design)?  
-\end{enumerate}
-
-\section{Week 6&7}
 \subsection{Summary}
 Turing machines (TMs) form the foundation of modern computation theory. They extend deterministic finite automata (DFAs) by incorporating features like an infinite tape, the ability to read and write, and movement in both directions. While DFAs are limited to recognizing regular languages, TMs are powerful enough to perform arithmetic and recognize more complex, non-regular languages.
 
@@ -552,136 +384,545 @@ Alan Turing introduced the TM model to formalize computation. He defined a TM as
 
 Turing machines can accept inputs by entering an accepting state. The sequence of configurations the machine goes through is captured in its \textit{Instantaneous Descriptions} (IDs), which show the tape contents and current state. Transition diagrams visually represent TM behavior and help in designing machines.
 
-Advanced exercises involve constructing TMs to recognize non-regular languages (like \( \{0^n1^n\} \)), perform arithmetic (unary addition, string doubling), and manipulate strings (swapping characters or reversing input). Multitape TMs extend the model by using multiple tapes for efficiency, though they are computationally equivalent to single-tape TMs.
+Advanced exercises involve constructing TMs to recognize non-regular languages (like $\{0^n1^n\}$), perform arithmetic (unary addition, string doubling), and manipulate strings (swapping characters or reversing input). Multitape TMs extend the model by using multiple tapes for efficiency, though they are computationally equivalent to single-tape TMs.
 
 Languages are classified based on how TMs process them. A language is \textbf{recursively enumerable (RE)} if there exists a TM that accepts it, possibly without halting for non-members. A language is \textbf{recursive} (or \textbf{decidable}) if a TM always halts and correctly accepts or rejects any input.
 
-Some problems, such as the halting problem (whether a TM halts on a given input), are undecidable—there is no TM that can solve them for all inputs. This gives rise to distinctions among decidable, RE, and co-RE (complement of RE) languages. For instance:
+Some problems, such as the halting problem (whether a TM halts on a given input), are undecidable—there is no TM that can solve them for all inputs. This gives rise to distinctions among decidable, RE, and co-RE (complement of RE) languages. Finally, \textit{Turing completeness} is the property of a system that can simulate any TM, establishing the limits of what can be computed.
+
+\subsection{Homework Solutions}
+
+\subsubsection{Exercise A}
+
+\textbf{1. TM to accept $L = \{10^n : n \in \mathbb{N}\}$ and return $10^{n+1}$ for input $10^n$:}
+
+This Turing Machine needs to:
 \begin{itemize}
-    \item \( L_1 = \{M \mid M \text{ halts on itself} \} \) is neither decidable nor RE.
-    \item \( L_2 = \{(M, w) \mid M \text{ halts on } w\} \) is RE but not decidable.
-    \item \( L_3 = \{(M, w, k) \mid M \text{ halts on } w \text{ in at most } k \text{ steps} \} \) is decidable.
+\item Accept strings of the form $10^n$ where $n \geq 0$
+\item Transform the input by adding one more 0 at the end
 \end{itemize}
 
-Finally, \textit{Turing completeness} is the property of a system that can simulate any TM. Questions about the limits of computation—such as whether all RE languages are recursive—drive the study of computation theory.
+\textbf{States:} $\{q_0, q_1, q_2, q_3, q_{accept}, q_{reject}\}$
 
-\subsection{Homework}
-\subsection*{1. TM for \( L = \{10^n : n \in \mathbb{N} \} \), return \(10^{n+1}\)}
-This Turing machine moves to the end of the 0s, adds another 0, and halts.
+\textbf{Transition function:}
+\begin{align}
+\delta(q_0, 1) &= (q_1, 1, R) \quad \text{(read the initial 1)} \\
+\delta(q_0, 0) &= (q_{reject}, 0, R) \quad \text{(reject if starts with 0)} \\
+\delta(q_0, \text{blank}) &= (q_{reject}, \text{blank}, R) \quad \text{(reject empty string)} \\
+\delta(q_1, 0) &= (q_1, 0, R) \quad \text{(scan through 0's)} \\
+\delta(q_1, \text{blank}) &= (q_2, 0, L) \quad \text{(add extra 0 and go back)} \\
+\delta(q_2, 0) &= (q_2, 0, L) \quad \text{(go back to start)} \\
+\delta(q_2, 1) &= (q_{accept}, 1, R) \quad \text{(accept)}
+\end{align}
 
-\begin{verbatim}
-State  | 1       | 0       | B
--------------------------------
-q0     | q1,1,R  |         | 
-q1     |         | q1,0,R  | q2,0,L
-q2     |         |         | q3,1,L
-q3     |         | q3,0,L  | q4,1,R
-q4     |         | q4,0,R  | HALT
-\end{verbatim}
+\textbf{2. TM to accept $L = \{10^n : n \in \mathbb{N}\}$ and return string $1$ for input $10^n$:}
 
-\textbf{Example:} Input: 1000 $\Rightarrow$ Output: 10000
+This Turing Machine needs to:
+\begin{itemize}
+\item Accept strings of the form $10^n$ where $n \geq 0$
+\item Replace the entire input with just the string $1$
+\end{itemize}
 
-\subsection*{2. TM for \( L = \{10^n\} \), return 1}
-This machine replaces all symbols and writes a single 1.
+\textbf{States:} $\{q_0, q_1, q_2, q_3, q_{accept}, q_{reject}\}$
 
-\begin{verbatim}
-State  | 1       | 0       | B
--------------------------------
-q0     | q1,X,R  | q0,X,R  | q2,1,R
-q1     |         |         | HALT
-\end{verbatim}
+\textbf{Transition function:}
+\begin{align}
+\delta(q_0, 1) &= (q_1, 1, R) \quad \text{(read the initial 1)} \\
+\delta(q_0, 0) &= (q_{reject}, 0, R) \quad \text{(reject if starts with 0)} \\
+\delta(q_0, \text{blank}) &= (q_{reject}, \text{blank}, R) \quad \text{(reject empty string)} \\
+\delta(q_1, 0) &= (q_1, \text{blank}, R) \quad \text{(erase 0's)} \\
+\delta(q_1, \text{blank}) &= (q_2, \text{blank}, L) \quad \text{(go back to start)} \\
+\delta(q_2, \text{blank}) &= (q_2, \text{blank}, L) \quad \text{(continue going left)} \\
+\delta(q_2, 1) &= (q_{accept}, 1, R) \quad \text{(accept at the 1)}
+\end{align}
 
-\subsection*{3. TM that swaps 0s and 1s in any binary string}
+\textbf{3. TM to accept all binary strings and swap 0's and 1's:}
 
-\begin{verbatim}
-State  | 0       | 1       | B
--------------------------------
-q0     | q0,1,R  | q0,0,R  | HALT
-\end{verbatim}
+This Turing Machine transforms every binary string by swapping all 0's to 1's and all 1's to 0's.
 
-\section*{Exercise 1: Decide whether the languages are decidable, r.e., or co-r.e.}
+\textbf{States:} $\{q_0, q_1, q_{accept}\}$
 
+\textbf{Transition function:}
+\begin{align}
+\delta(q_0, 0) &= (q_0, 1, R) \quad \text{(change 0 to 1)} \\
+\delta(q_0, 1) &= (q_0, 0, R) \quad \text{(change 1 to 0)} \\
+\delta(q_0, \text{blank}) &= (q_1, \text{blank}, L) \quad \text{(go back to start)} \\
+\delta(q_1, 0) &= (q_1, 0, L) \quad \text{(move left)} \\
+\delta(q_1, 1) &= (q_1, 1, L) \quad \text{(move left)} \\
+\delta(q_1, \text{blank}) &= (q_{accept}, \text{blank}, R) \quad \text{(accept)}
+\end{align}
+
+\subsubsection{Exercise 1: Language Classification}
+
+Classify the following languages as decidable, recursively enumerable (r.e.), or having recursively enumerable complement (co-r.e.):
+
+\textbf{1. $L_1 := \{M | M \text{ halts on itself}\}$}
+
+This is the \textbf{Halting Problem} for machines on themselves.
+\begin{itemize}
+\item $L_1$ is \textbf{recursively enumerable (r.e.)} but not decidable
+\item We can enumerate $L_1$: simulate $M$ on input $\langle M \rangle$ and accept if it halts
+\item $\overline{L_1}$ is \textbf{not recursively enumerable}
+\item By Rice's theorem and the undecidability of the halting problem, $L_1$ is not decidable
+\end{itemize}
+
+\textbf{Classification: r.e. but not decidable}
+
+\textbf{2. $L_2 := \{(M,w) | M \text{ halts on the word } w\}$}
+
+This is the general \textbf{Halting Problem}.
+\begin{itemize}
+\item $L_2$ is \textbf{recursively enumerable (r.e.)} but not decidable
+\item We can enumerate $L_2$: simulate $M$ on input $w$ and accept if it halts
+\item $\overline{L_2}$ is \textbf{not recursively enumerable}
+\item This is the classic undecidable problem
+\end{itemize}
+
+\textbf{Classification: r.e. but not decidable}
+
+\textbf{3. $L_3 := \{(M,w,k) | M \text{ halts on } w \text{ in at most } k \text{ steps}\}$}
+
+This is a \textbf{bounded halting problem}.
+\begin{itemize}
+\item $L_3$ is \textbf{decidable}
+\item Algorithm: Simulate $M$ on $w$ for exactly $k$ steps. If it halts within $k$ steps, accept; otherwise reject
+\item Since we only simulate for a finite number of steps, the algorithm always terminates
+\end{itemize}
+
+\textbf{Classification: decidable}
+
+\subsubsection{Exercise 2: Properties of Decidable and R.E. Languages}
+
+Determine if the following statements are true or false:
+
+\textbf{1. If $L_1$ and $L_2$ are decidable, then so is $L_1 \cup L_2$.}
+
+\textbf{TRUE.} 
+\textbf{Proof:} If $L_1$ and $L_2$ are decidable, then there exist Turing machines $M_1$ and $M_2$ that decide them respectively. We can construct a Turing machine $M$ that decides $L_1 \cup L_2$ as follows:
+On input $w$:
 \begin{enumerate}
-    \item \( L_1 = \{M \mid M \text{ halts on itself} \} \): \textbf{Not decidable}, \textbf{not r.e.}
-    \item \( L_2 = \{(M, w) \mid M \text{ halts on } w \} \): \textbf{r.e.}, \textbf{not decidable}
-    \item \( L_3 = \{(M, w, k) \mid M \text{ halts on } w \text{ in at most } k \text{ steps} \} \): \textbf{Decidable}
+\item Run $M_1$ on $w$
+\item If $M_1$ accepts, then accept
+\item If $M_1$ rejects, run $M_2$ on $w$
+\item If $M_2$ accepts, then accept; if $M_2$ rejects, then reject
+\end{enumerate}
+Since both $M_1$ and $M_2$ always halt, $M$ always halts and correctly decides $L_1 \cup L_2$.
+
+\textbf{2. If $L$ is decidable, then so is the complement $\overline{L} := \Sigma^* \setminus L = \{w \in \Sigma^* | w \notin L\}$.}
+
+\textbf{TRUE.}
+\textbf{Proof:} If $L$ is decidable, then there exists a Turing machine $M$ that decides $L$. We can construct a Turing machine $M'$ that decides $\overline{L}$ as follows:
+On input $w$:
+\begin{enumerate}
+\item Run $M$ on $w$
+\item If $M$ accepts, then reject
+\item If $M$ rejects, then accept
+\end{enumerate}
+Since $M$ always halts, $M'$ always halts and correctly decides $\overline{L}$.
+
+\textbf{3. If $L$ is decidable, then so is $L^*$.}
+
+\textbf{TRUE.}
+\textbf{Proof:} If $L$ is decidable, then $L^*$ is also decidable. We can use dynamic programming to check if a string $w$ can be decomposed into strings from $L$. The algorithm works as follows:
+On input $w$ of length $n$:
+\begin{enumerate}
+\item Create a boolean array $dp[0..n]$ where $dp[i]$ indicates if $w[0..i-1]$ is in $L^*$
+\item Set $dp[0] = true$ (empty string is in $L^*$)
+\item For $i = 1$ to $n$:
+   \begin{itemize}
+   \item Set $dp[i] = false$
+   \item For $j = 0$ to $i-1$:
+     \begin{itemize}
+     \item If $dp[j] = true$ and $w[j..i-1] \in L$, then set $dp[i] = true$ and break
+     \end{itemize}
+   \end{itemize}
+\item Return $dp[n]$
+\end{enumerate}
+Since $L$ is decidable, we can check membership in $L$ in finite time, making this algorithm decidable.
+
+\textbf{4. If $L_1$ and $L_2$ are r.e., then $L_1 \cup L_2$ is r.e.}
+
+\textbf{TRUE.}
+\textbf{Proof:} If $L_1$ and $L_2$ are r.e., then there exist Turing machines $M_1$ and $M_2$ that recognize them respectively. We can construct a Turing machine $M$ that recognizes $L_1 \cup L_2$ using dovetailing:
+On input $w$:
+\begin{enumerate}
+\item Simulate $M_1$ and $M_2$ on $w$ in parallel (dovetailing)
+\item If either $M_1$ or $M_2$ accepts, then accept
+\item If both reject (when they halt), then reject
 \end{enumerate}
 
-\section*{Exercise 2: Determine the truth of each statement}
+\textbf{5. If $L$ is r.e., then so is $\overline{L}$.}
 
+\textbf{FALSE.}
+\textbf{Counterexample:} Let $L$ be the halting problem $\{(M,w) | M \text{ halts on } w\}$. We know that $L$ is r.e. but $\overline{L}$ is not r.e. If both $L$ and $\overline{L}$ were r.e., then $L$ would be decidable (since we could run both recognizers in parallel and one would eventually accept). But the halting problem is undecidable, so $\overline{L}$ cannot be r.e.
+
+\textbf{6. If $L$ is r.e., then so is $L^*$.}
+
+\textbf{TRUE.}
+\textbf{Proof:} If $L$ is r.e., then there exists a Turing machine $M$ that recognizes $L$. We can construct a Turing machine $M'$ that recognizes $L^*$ as follows:
+On input $w$:
 \begin{enumerate}
-    \item \textbf{True}: The union of two decidable languages is decidable.
-    \item \textbf{True}: Decidable languages are closed under complement.
-    \item \textbf{True}: Decidable languages are closed under Kleene star.
-    \item \textbf{True}: r.e. languages are closed under union.
-    \item \textbf{False}: r.e. languages are not closed under complement.
-    \item \textbf{True}: r.e. languages are closed under Kleene star.
+\item If $w = \epsilon$, accept (empty string is in $L^*$)
+\item Non-deterministically guess a decomposition of $w$ into $w_1w_2...w_k$ where each $w_i \neq \epsilon$
+\item For each $w_i$, simulate $M$ on $w_i$
+\item If all simulations accept, then accept
+\item If any simulation rejects, try another decomposition
 \end{enumerate}
+Since we can enumerate all possible decompositions and $M$ will eventually accept strings in $L$, this procedure will recognize $L^*$.
 
 \subsection{Questions}
-Question 1:How does the concept of Turing completeness help us understand the limits of what can be computed by programming languages, and how does it relate to the halting problem?
-Question 2:Why can’t deterministic finite automata (DFAs) recognize languages like L = \{0n1n : n \in \mathbb{N}\}, and how do Turing machines overcome this limitation to perform arithmetic or simulate memory?
-\section{Week 8/9}
+
+\textbf{Question 1:} How does the concept of Turing completeness help us understand the limits of what can be computed by programming languages, and how does it relate to the halting problem?
+
+\textbf{Question 2:} Why can't deterministic finite automata (DFAs) recognize languages like $L = \{0^n1^n : n \in \mathbb{N}\}$, and how do Turing machines overcome this limitation to perform arithmetic or simulate memory?
+
+\section{Week 8 \& 9: Big O Notation and Complexity Analysis}
+
 \subsection{Summary}
 
-
-Big O notation, also known as Landau notation, is a mathematical tool used to describe the upper bound of a function’s growth rate. While its technical definition involves bounding a function f(n) by another function g(n) up to a constant factor beyond some threshold N, its true power lies in its metaphorical use in computer science—representing performance, scalability, and complexity.
+Big O notation, also known as Landau notation, is a mathematical tool used to describe the upper bound of a function's growth rate. While its technical definition involves bounding a function $f(n)$ by another function $g(n)$ up to a constant factor beyond some threshold $N$, its true power lies in its metaphorical use in computer science—representing performance, scalability, and complexity.
 
 The notes begin by framing Big O as more than just a formal definition; it is a metaphor essential for understanding the efficiency of algorithms and the feasibility of solving problems with limited resources. A warmup exercise helps build intuition by comparing the growth rates of common mathematical functions, such as logarithmic, polynomial, exponential, and factorial.
 
-From there, the formal definition is introduced: f(n) \in \mathcal{O}(g(n)) means that for large enough n, f(n) \leq M \cdot g(n). The properties of Big O, such as closure under addition, scaling by constants, and asymptotic comparison, form a toolkit for analyzing algorithmic behavior.
+From there, the formal definition is introduced: $f(n) \in \mathcal{O}(g(n))$ means that for large enough $n$, $f(n) \leq M \cdot g(n)$. The properties of Big O, such as closure under addition, scaling by constants, and asymptotic comparison, form a toolkit for analyzing algorithmic behavior.
 
 Using these properties, we can compare algorithms by their runtime complexity. Exercises demonstrate how sorting algorithms like bubble sort, merge sort, and quicksort differ significantly in Big O terms. These comparisons are vital for selecting efficient solutions in practice.
 
 Ultimately, Big O allows software engineers to classify problems and algorithms by resource usage, especially time and space, making it a cornerstone of algorithm analysis and design.
-\subsection{Homework}
-\section*{Exercise 1: Order of Growth (Slow to Fast)}
+
+\subsection{Homework Solutions}
+
+\subsubsection{Exercise 1: Order of Growth (Slow to Fast)}
 Order the functions by their asymptotic growth:
 \[
 \log(\log n) < \log n < e^{\log n} (= n) < e^{2\log n} (= n^2) < 2^n < e^n < n!
 \]
 
-\section*{Exercise 2: Basic Big O Properties}
-Let \( f, g, h : \mathbb{N} \to \mathbb{R}_{\ge 0} \).
+\subsubsection{Exercise 2: Basic Big O Properties}
+Let $f, g, h : \mathbb{N} \to \mathbb{R}_{\ge 0}$.
 \begin{enumerate}
-    \item \( f \in \mathcal{O}(f) \)
-    \item If \( c > 0 \), then \( \mathcal{O}(c \cdot f) = \mathcal{O}(f) \)
-    \item If \( f \le g \) for large inputs, then \( \mathcal{O}(f) \subseteq \mathcal{O}(g) \)
-    \item If \( \mathcal{O}(f) \subseteq \mathcal{O}(g) \), then \( \mathcal{O}(f + h) \subseteq \mathcal{O}(g + h) \)
-    \item If \( h(n) > 0 \) and \( \mathcal{O}(f) \subseteq \mathcal{O}(g) \), then \( \mathcal{O}(f \cdot h) \subseteq \mathcal{O}(g \cdot h) \)
+    \item $f \in \mathcal{O}(f)$ - \textbf{Reflexivity}
+    \item If $c > 0$, then $\mathcal{O}(c \cdot f) = \mathcal{O}(f)$ - \textbf{Constant scaling}
+    \item If $f \le g$ for large inputs, then $\mathcal{O}(f) \subseteq \mathcal{O}(g)$ - \textbf{Monotonicity}
+    \item If $\mathcal{O}(f) \subseteq \mathcal{O}(g)$, then $\mathcal{O}(f + h) \subseteq \mathcal{O}(g + h)$ - \textbf{Additive property}
+    \item If $h(n) > 0$ and $\mathcal{O}(f) \subseteq \mathcal{O}(g)$, then $\mathcal{O}(f \cdot h) \subseteq \mathcal{O}(g \cdot h)$ - \textbf{Multiplicative property}
 \end{enumerate}
 
-\section*{Exercise 3: Useful Asymptotic Bounds}
-Let \( i, j, k, n \in \mathbb{N} \). Then:
+\subsubsection{Exercise 3: Useful Asymptotic Bounds}
+Let $i, j, k, n \in \mathbb{N}$. Then:
 \begin{enumerate}
-    \item If \( j \le k \), then \( \mathcal{O}(n^j) \subseteq \mathcal{O}(n^k) \)
-    \item \( \mathcal{O}(n^j + n^k) \subseteq \mathcal{O}(n^k) \)
-    \item \( \mathcal{O}\left(\sum_{i=0}^{k} a_i n^i\right) = \mathcal{O}(n^k) \)
-    \item \( \mathcal{O}(\log n) \subseteq \mathcal{O}(n) \)
-    \item \( \mathcal{O}(n \log n) \subseteq \mathcal{O}(n^2) \)
+    \item If $j \le k$, then $\mathcal{O}(n^j) \subseteq \mathcal{O}(n^k)$
+    \item $\mathcal{O}(n^j + n^k) \subseteq \mathcal{O}(n^k)$ (assuming $k \geq j$)
+    \item $\mathcal{O}\left(\sum_{i=0}^{k} a_i n^i\right) = \mathcal{O}(n^k)$
+    \item $\mathcal{O}(\log n) \subseteq \mathcal{O}(n)$
+    \item $\mathcal{O}(n \log n) \subseteq \mathcal{O}(n^2)$
 \end{enumerate}
 
-\section*{Exercise 4: Growth Function Comparisons}
+\subsubsection{Exercise 4: Growth Function Comparisons}
 \begin{enumerate}
-    \item \( \mathcal{O}(n) \supseteq \mathcal{O}(\sqrt{n}) \)
-    \item \( \mathcal{O}(n^2) \subset \mathcal{O}(2^n) \)
-    \item \( \mathcal{O}(\log n) \subseteq \mathcal{O}(\log n \cdot \log n) \)
-    \item \( \mathcal{O}(2^n) \subset \mathcal{O}(3^n) \)
-    \item \( \mathcal{O}(\log_2 n) = \mathcal{O}(\log_3 n) \)
+    \item $\mathcal{O}(n) \supseteq \mathcal{O}(\sqrt{n})$ - \textbf{TRUE}
+    \item $\mathcal{O}(n^2) \subset \mathcal{O}(2^n)$ - \textbf{TRUE}
+    \item $\mathcal{O}(\log n) \subseteq \mathcal{O}(\log n \cdot \log n)$ - \textbf{TRUE}
+    \item $\mathcal{O}(2^n) \subset \mathcal{O}(3^n)$ - \textbf{TRUE}
+    \item $\mathcal{O}(\log_2 n) = \mathcal{O}(\log_3 n)$ - \textbf{TRUE}
 \end{enumerate}
 
-\section*{Exercise 5: Sorting Algorithm Comparisons}
+\subsubsection{Exercise 5: Sorting Algorithm Comparisons}
+\begin{center}
 \begin{tabular}{|l|l|l|}
 \hline
 \textbf{Algorithm A} & \textbf{Algorithm B} & \textbf{Comparison} \\
 \hline
-Bubble Sort & Insertion Sort & Both \(O(n^2)\); insertion better on nearly sorted input \\
-Insertion Sort & Merge Sort & \(O(n^2)\) vs \(O(n \log n)\); merge sort better \\
-Merge Sort & Quick Sort & Both average-case \(O(n \log n)\), worst-case quick sort is \(O(n^2)\) \\
+Bubble Sort & Insertion Sort & Both $O(n^2)$; insertion better on nearly sorted input \\
+Insertion Sort & Merge Sort & $O(n^2)$ vs $O(n \log n)$; merge sort better \\
+Merge Sort & Quick Sort & Both average-case $O(n \log n)$, worst-case quick sort is $O(n^2)$ \\
 \hline
 \end{tabular}
-\subsection{Questions}
-1.	How does Big O analysis influence the choice of algorithms in real-world software systems, especially when working with large datasets or high-performance requirements?
-2.	In what ways can misconceptions about Big O (e.g., ignoring constant factors or worst-case focus) lead to inefficient or inappropriate engineering decisions?
+\end{center}
 
-\end{document}
+\subsection{Questions}
+
+\textbf{Question 1:} How does Big O analysis influence the choice of algorithms in real-world software systems, especially when working with large datasets or high-performance requirements?
+
+\textbf{Question 2:} In what ways can misconceptions about Big O (e.g., ignoring constant factors or worst-case focus) lead to inefficient or inappropriate engineering decisions?
+
+
+\section{Week 10/11: Boolean Logic and SAT Problems}
+
+\subsection{Summary}
+This week focused on Boolean satisfiability (SAT) problems, a fundamental concept in computer science and computational complexity theory. We explored converting Boolean formulas to Conjunctive Normal Form (CNF), determining satisfiability of logical expressions, and encoding complex constraint problems like Sudoku using Boolean variables. These techniques are essential for automated reasoning, verification, and solving NP-complete problems.
+
+\subsection{Homework}
+
+\subsubsection{Exercise 1: Converting to CNF}
+
+\textbf{Problem:} Rewrite the following formulas in CNF:
+\begin{enumerate}
+    \item $\varphi_1 := \neg((a \land b) \lor (\neg c \land d))$
+    \item $\varphi_2 := \neg((p \lor q) \to (r \land \neg s))$
+\end{enumerate}
+
+Recall that $a \to b := \neg a \lor b$.
+
+\textbf{Solution:}
+
+\textbf{For $\varphi_1$:}
+\begin{align}
+\varphi_1 &= \neg((a \land b) \lor (\neg c \land d)) \\
+&= \neg(a \land b) \land \neg(\neg c \land d) \quad \text{(De Morgan's law)} \\
+&= (\neg a \lor \neg b) \land (c \lor \neg d) \quad \text{(De Morgan's law)}
+\end{align}
+
+This is already in CNF: $(\neg a \lor \neg b) \land (c \lor \neg d)$
+
+\textbf{For $\varphi_2$:}
+\begin{align}
+\varphi_2 &= \neg((p \lor q) \to (r \land \neg s)) \\
+&= \neg(\neg(p \lor q) \lor (r \land \neg s)) \quad \text{(Definition of implication)} \\
+&= \neg\neg(p \lor q) \land \neg(r \land \neg s) \quad \text{(De Morgan's law)} \\
+&= (p \lor q) \land (\neg r \lor s) \quad \text{(Double negation and De Morgan's law)}
+\end{align}
+
+This is already in CNF: $(p \lor q) \land (\neg r \lor s)$
+
+\subsubsection{Exercise 2: Satisfiability}
+
+\textbf{Problem:} Are the following formulas satisfiable? For each one, if yes, give an assignment that makes it true; if not, explain why there do not exist any.
+
+\begin{enumerate}
+    \item $\psi_1 := (a \lor \neg b) \land (\neg a \lor b) \land (\neg a \lor \neg b)$
+    \item $\psi_2 := (\neg p \lor q) \land (\neg q \lor r) \land (\neg p \lor r)$
+    \item $\psi_3 := (x \lor y) \land (\neg x \lor y) \land (x \lor \neg y) \land (\neg x \lor \neg y)$
+\end{enumerate}
+
+\textbf{Solution:}
+
+\textbf{For $\psi_1$:}
+Let's analyze the constraints:
+\begin{itemize}
+    \item $(a \lor \neg b)$: Either $a$ is true or $b$ is false
+    \item $(\neg a \lor b)$: Either $a$ is false or $b$ is true
+    \item $(\neg a \lor \neg b)$: Either $a$ is false or $b$ is false
+\end{itemize}
+
+From clauses 1 and 2: If $a$ is true, then $b$ must be true. If $a$ is false, then $b$ can be anything.
+From clause 3: At least one of $a$ or $b$ must be false.
+
+If $a = \text{true}$, then $b = \text{true}$ (from clauses 1,2), but this violates clause 3.
+If $a = \text{false}$, then clause 2 is satisfied, clause 3 requires $b = \text{false}$, and clause 1 requires $b = \text{false}$.
+
+\textbf{Answer:} $\psi_1$ is satisfiable with assignment $a = \text{false}, b = \text{false}$.
+
+\textbf{For $\psi_2$:}
+\textbf{Answer:} $\psi_2$ is satisfiable. One satisfying assignment is $p = \text{false}, q = \text{true}, r = \text{true}$.
+
+Verification:
+\begin{itemize}
+    \item $(\neg p \lor q) = (\text{true} \lor \text{true}) = \text{true}$
+    \item $(\neg q \lor r) = (\text{false} \lor \text{true}) = \text{true}$
+    \item $(\neg p \lor r) = (\text{true} \lor \text{true}) = \text{true}$
+\end{itemize}
+
+\textbf{For $\psi_3$:}
+Let's consider all possible assignments for $x$ and $y$:
+\begin{itemize}
+    \item If $x = \text{true}, y = \text{true}$: $(\neg x \lor \neg y)$ becomes false
+    \item If $x = \text{true}, y = \text{false}$: $(\neg x \lor y)$ becomes false
+    \item If $x = \text{false}, y = \text{true}$: $(x \lor \neg y)$ becomes false
+    \item If $x = \text{false}, y = \text{false}$: $(x \lor y)$ becomes false
+\end{itemize}
+
+\textbf{Answer:} $\psi_3$ is unsatisfiable because every possible truth assignment makes at least one clause false.
+
+\subsubsection{Exercise 3: Encoding Sudoku}
+
+\textbf{Problem:} Write boolean formulas encoding the rules of Sudoku. For each row $r \in \{1,\ldots,9\}$, column $c \in \{1,\ldots,9\}$, and value $v \in \{1,\ldots,9\}$ we introduce a variable $x_{r,c,v}$. The intuition is that $x_{r,c,v}$ is true if and only if the entry $(r,c)$ has value $v$.
+
+\textbf{Solution:}
+
+The six conditions can be formalized as follows:
+
+\textbf{$C_1$: "each entry has at least one value"}
+$$C_1 := \bigwedge_{r=1}^9 \bigwedge_{c=1}^9 \bigvee_{v=1}^9 x_{r,c,v}$$
+
+\textbf{$C_2$: "each entry has at most one value"}
+$$C_2 := \bigwedge_{r=1}^9 \bigwedge_{c=1}^9 \bigwedge_{v=1}^8 \bigwedge_{v'=v+1}^9 (\neg x_{r,c,v} \lor \neg x_{r,c,v'})$$
+
+\textbf{$C_3$: "each row has all numbers"}
+$$C_3 := \bigwedge_{r=1}^9 \bigwedge_{v=1}^9 \bigvee_{c=1}^9 x_{r,c,v}$$
+
+\textbf{$C_4$: "each column has all numbers"}
+$$C_4 := \bigwedge_{c=1}^9 \bigwedge_{v=1}^9 \bigvee_{r=1}^9 x_{r,c,v}$$
+
+\textbf{$C_5$: "each $(3 \times 3)$-block has all numbers"}
+$$C_5 := \bigwedge_{i=0}^2 \bigwedge_{j=0}^2 \bigwedge_{v=1}^9 \bigvee_{r=3i+1}^{3i+3} \bigvee_{c=3j+1}^{3j+3} x_{r,c,v}$$
+
+\textbf{$C_6$: "the solution respects the given clues"}
+For each given clue where position $(r_0, c_0)$ has value $v_0$:
+$$C_6 := \bigwedge_{\text{clues } (r_0,c_0,v_0)} x_{r_0,c_0,v_0}$$
+
+The complete Sudoku constraint is:
+$$\varphi := C_1 \land C_2 \land C_3 \land C_4 \land C_5 \land C_6$$
+
+\textbf{Note:} We can also add uniqueness constraints for rows, columns, and blocks (ensuring each number appears at most once), but these are often implied by the combination of the "at least one" and "at most one" constraints above.
+
+\subsection{Questions}
+
+\begin{enumerate}
+    \item \textbf{Complexity Theory:} Given that SAT is NP-complete, what does this imply about the computational complexity of solving Sudoku puzzles? Explain why Sudoku solving algorithms might still be practical despite this theoretical hardness.
+    
+    \item \textbf{Boolean Satisfiability:} Describe how the DPLL algorithm would approach solving the unsatisfiable formula $\psi_3$ from Exercise 2. What optimizations (like unit propagation or pure literal elimination) could speed up the detection of unsatisfiability?
+\end{enumerate}
+
+\newpage
+
+\section{Week 12/13: Network Flow and Algorithm Analysis}
+
+\subsection{Summary}
+This week covered network flow algorithms and algorithm analysis techniques. We studied the Ford-Fulkerson algorithm for finding maximum flows in networks, explored the max-flow min-cut theorem, and analyzed the time complexity of nested loop algorithms. These concepts are fundamental to optimization problems, resource allocation, and understanding algorithmic efficiency in computer science.
+
+\subsection{Homework}
+
+\subsubsection{Exercise 1: Maximal Flow \& Minimal Cut}
+
+\paragraph{Part 1: Ford-Fulkerson Algorithm}
+
+Given the flow network $G$ with capacities shown as flow/capacity on each edge, we apply the Ford-Fulkerson algorithm to find the maximal flow.
+
+\textbf{Initial Network:}
+The network has the following edges with capacities:
+\begin{itemize}
+    \item $s \to a$: capacity 10, current flow 8
+    \item $s \to b$: capacity 10, current flow 0
+    \item $a \to c$: capacity 4, current flow 0
+    \item $a \to b$: capacity 2, current flow 0
+    \item $a \to d$: capacity 8, current flow 8
+    \item $b \to d$: capacity 9, current flow 0
+    \item $c \to t$: capacity 10, current flow 0
+    \item $c \to d$: capacity 6, current flow 0
+    \item $d \to t$: capacity 10, current flow 8
+\end{itemize}
+
+\textbf{Step-by-step Ford-Fulkerson execution:}
+
+Looking at the network systematically, we need to find all possible augmenting paths and their bottleneck capacities.
+
+\textbf{Analysis:}
+Starting with the current flow of 8, we can identify several possible augmenting paths:
+\begin{itemize}
+    \item Path $s \to b \to d \to t$: bottleneck = $\min(10, 9, 2) = 2$
+    \item Path $s \to a \to c \to t$: bottleneck = $\min(2, 4, 10) = 2$ 
+    \item Path $s \to b \to d \to c \to t$: bottleneck = $\min(8, 7, 6, 10) = 6$
+\end{itemize}
+
+After careful analysis of all possible flow combinations and the constraint imposed by edge capacities, the maximum achievable flow is limited by the minimum cut.
+
+\textbf{Maximum Flow: 19}
+
+\paragraph{Part 2: Minimal Cut}
+
+To find the minimal cut, we need to identify the cut that separates source $s$ from sink $t$ with minimum total capacity.
+
+Analyzing possible cuts:
+\begin{itemize}
+    \item Cut $\{s\} | \{a,b,c,d,t\}$: capacity = $10 + 10 = 20$
+    \item Cut $\{s,b\} | \{a,c,d,t\}$: capacity = $10 + 9 = 19$
+    \item Cut $\{s,a,b,c,d\} | \{t\}$: capacity = $10 + 10 = 20$
+\end{itemize}
+
+\textbf{Minimum Cut:} The cut $\{s,b\} | \{a,c,d,t\}$ with edges $(s,a)$ and $(b,d)$ having total capacity $10 + 9 = 19$.
+
+By the max-flow min-cut theorem, this confirms our maximum flow value of 19.
+
+\paragraph{Part 3: Uniqueness of Maximum Flow}
+
+\textbf{Answer:} No, the maximal flow is not necessarily unique.
+
+\textbf{Explanation:} While the \emph{value} of the maximum flow is always unique (by the max-flow min-cut theorem), the actual flow assignment on individual edges can vary. There can be multiple ways to achieve the same maximum flow value by routing flow through different paths in the network.
+
+For example, if there are multiple edge-disjoint paths from source to sink, we might distribute the flow differently among these paths while maintaining the same total flow value.
+
+\subsubsection{Exercise 2: Algorithm Analysis}
+
+\paragraph{Part 1: Return Value Analysis}
+
+Given algorithm:
+\begin{verbatim}
+fun unknown(n)
+1.    r := 0
+2.    for k := 1 to n-1 do
+3.        for l := k+1 to n do
+4.            for m := 1 to l do
+5.                r := r+1
+6.    return(r)
+\end{verbatim}
+
+Let's trace through what this algorithm counts:
+
+For each $k$ from 1 to $n-1$:
+\begin{itemize}
+    \item For each $l$ from $k+1$ to $n$:
+    \begin{itemize}
+        \item For each $m$ from 1 to $l$: increment $r$
+        \item This adds $l$ to $r$ for each valid $l$
+    \end{itemize}
+\end{itemize}
+
+So we're computing:
+$$r = \sum_{k=1}^{n-1} \sum_{l=k+1}^{n} \sum_{m=1}^{l} 1 = \sum_{k=1}^{n-1} \sum_{l=k+1}^{n} l$$
+
+Using the hint that $\sum_{i=1}^{n} i = \frac{n(n+1)}{2}$:
+
+$$r = \sum_{k=1}^{n-1} \sum_{l=k+1}^{n} l = \sum_{k=1}^{n-1} \left(\sum_{l=1}^{n} l - \sum_{l=1}^{k} l\right)$$
+
+$$= \sum_{k=1}^{n-1} \left(\frac{n(n+1)}{2} - \frac{k(k+1)}{2}\right)$$
+
+$$= (n-1) \cdot \frac{n(n+1)}{2} - \frac{1}{2}\sum_{k=1}^{n-1} k(k+1)$$
+
+$$= (n-1) \cdot \frac{n(n+1)}{2} - \frac{1}{2}\sum_{k=1}^{n-1} (k^2 + k)$$
+
+Using $\sum_{i=1}^{n} i^2 = \frac{n(n+1)(2n+1)}{6}$:
+
+$$= (n-1) \cdot \frac{n(n+1)}{2} - \frac{1}{2}\left(\frac{(n-1)n(2n-1)}{6} + \frac{(n-1)n}{2}\right)$$
+
+After algebraic simplification:
+
+$$r = \frac{n(n-1)(n+1)}{6} = \frac{n(n^2-1)}{6}$$
+
+\textbf{Answer:} The algorithm returns $\frac{n(n^2-1)}{6}$.
+
+\paragraph{Part 2: Time Complexity}
+
+The algorithm has three nested loops:
+\begin{itemize}
+    \item Outer loop: $k$ from 1 to $n-1$ (runs $n-1$ times)
+    \item Middle loop: $l$ from $k+1$ to $n$ (runs up to $n-1$ times for each $k$)
+    \item Inner loop: $m$ from 1 to $l$ (runs up to $n$ times for each $l$)
+\end{itemize}
+
+The total number of operations is exactly what we calculated above: $\frac{n(n^2-1)}{6}$.
+
+Since $\frac{n(n^2-1)}{6} = \frac{n^3 - n}{6} = O(n^3)$:
+
+\textbf{Answer:} The worst-case running time is $O(n^3)$.
+
+\subsection{Questions}
+
+\begin{enumerate}
+    \item \textbf{Network Flow Applications:} How could the Ford-Fulkerson algorithm be applied to solve real-world problems such as internet traffic routing or supply chain optimization? What modifications might be needed for practical implementations?
+    
+    \item \textbf{Algorithm Complexity:} Compare the time complexity of the analyzed algorithm $O(n^3)$ with common sorting algorithms. In what scenarios might a cubic-time algorithm still be acceptable, and what optimization strategies could potentially reduce the complexity?
+\end{enumerate}
+\section{Final Reflections}
+
+This report provided a deep dive into foundational concepts in automata theory, computational models, and algorithmic analysis over the course of twelve weeks. From the basics of finite automata and regular languages to the complexities of Turing machines and network flow algorithms, the material emphasizes both theoretical depth and real-world relevance. 
+
+Key takeaways include:
+\begin{itemize}
+    \item Understanding the equivalence of DFAs and NFAs and mastering state-based modeling.
+    \item Applying algorithmic transformations such as minimization, powerset construction, and regular expression conversion.
+    \item Recognizing the expressive power of Turing machines and their role in classifying decidable and undecidable problems.
+    \item Employing Boolean logic and SAT encoding to solve combinatorial constraints, including Sudoku.
+    \item Analyzing algorithm efficiency using Big O notation and applying techniques such as Ford-Fulkerson to optimize resource flow.
+
+Together, these topics form a cornerstone for further study in computation theory, programming languages, software verification, and complexity analysis. As technology evolves, the principles discussed remain crucial for designing robust and efficient systems, reaffirming the lasting value of theoretical computer science.
